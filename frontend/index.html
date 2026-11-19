@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AquaSense Dashboard</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- Animated aqua background: bubbles + swimming fish -->
+    <div class="aqua-background" id="aquaBackground"></div>
+
+    <!-- =========================
+         SIDEBAR
+    ========================== -->
+    <aside class="sidebar">
+        <div class="logo">
+            <span class="logo-fish">🐠</span>
+            <h2>AquaSense</h2>
+        </div>
+
+        <nav class="sidebar-nav">
+            <button class="nav-item active" data-section="overview">📊 Overview</button>
+            <button class="nav-item" data-section="tanks">🛢️ Tanks</button>
+            <button class="nav-item" data-section="devices">📡 Devices</button>
+            <button class="nav-item" data-section="sensor-readings">🌡️ Sensor Readings</button>
+            <button class="nav-item" data-section="feed-events">🍽️ Feed Events</button>
+            <button class="nav-item" data-section="users">👤 Users</button>
+        </nav>
+
+        <div class="sidebar-footer">
+            <span id="connectionDot" class="dot dot-checking"></span>
+            <span id="connectionText">Checking API…</span>
+        </div>
+    </aside>
+
+    <!-- =========================
+         MAIN CONTENT
+    ========================== -->
+    <main class="main-content">
+
+        <!-- OVERVIEW -->
+        <section id="overview" class="dashboard-section active-section">
+            <div class="section-header">
+                <h1>Overview</h1>
+                <button id="refreshBtn" class="btn-primary">🔄 Refresh IoT Data</button>
+            </div>
+
+            <div class="stat-cards" id="statCards">
+                <!-- filled by overview.js -->
+            </div>
+
+            <div class="panel-grid">
+                <div class="panel">
+                    <h3>Latest Sensor Readings</h3>
+                    <table class="data-table" id="latestReadingsTable">
+                        <thead><tr><th>Tank</th><th>Parameter</th><th>Value</th><th>Time</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <div class="panel">
+                    <h3>Tank Status</h3>
+                    <div id="tankStatusPanel" class="tank-status-panel"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TANKS -->
+        <section id="tanks" class="dashboard-section">
+            <div class="section-header">
+                <h1>Tanks</h1>
+                <button class="btn-primary" onclick="openAddTankForm()">+ Add Tank</button>
+            </div>
+            <div id="addTankForm" class="inline-form hidden">
+                <input type="text" id="tankNameInput" placeholder="Tank name">
+                <input type="number" id="tankCapacityInput" placeholder="Capacity (L)">
+                <input type="text" id="tankLocationInput" placeholder="Location (optional)">
+                <input type="number" id="tankUserIdInput" placeholder="Owner user_id">
+                <button class="btn-primary" onclick="submitAddTank()">Save</button>
+            </div>
+            <table class="data-table">
+                <thead><tr><th>ID</th><th>Name</th><th>Capacity (L)</th><th>Location</th><th>Owner</th><th>Devices</th><th></th></tr></thead>
+                <tbody id="tanksTableBody"></tbody>
+            </table>
+        </section>
+
+        <!-- DEVICES -->
+        <section id="devices" class="dashboard-section">
+            <div class="section-header">
+                <h1>Devices</h1>
+                <button class="btn-primary" onclick="openAddDeviceForm()">+ Add Device</button>
+            </div>
+            <div id="addDeviceForm" class="inline-form hidden">
+                <input type="text" id="deviceNameInput" placeholder="Device name">
+                <input type="text" id="deviceTypeInput" placeholder="Device type">
+                <input type="number" id="deviceTankIdInput" placeholder="Tank ID">
+                <button class="btn-primary" onclick="submitAddDevice()">Save</button>
+            </div>
+            <table class="data-table">
+                <thead><tr><th>ID</th><th>Name</th><th>Type</th><th>Status</th><th>Tank</th><th>Last Seen</th><th></th></tr></thead>
+                <tbody id="devicesTableBody"></tbody>
+            </table>
+        </section>
+
+        <!-- SENSOR READINGS -->
+        <section id="sensor-readings" class="dashboard-section">
+            <div class="section-header">
+                <h1>Sensor Readings</h1>
+                <button class="btn-primary" onclick="openAddReadingForm()">+ Add Reading</button>
+            </div>
+            <div id="addReadingForm" class="inline-form hidden">
+                <input type="number" id="readingDeviceIdInput" placeholder="Device ID">
+                <input type="number" id="readingTankIdInput" placeholder="Tank ID">
+                <input type="text" id="readingParameterInput" placeholder="Parameter (e.g. pH)">
+                <input type="number" step="0.01" id="readingValueInput" placeholder="Value">
+                <input type="text" id="readingUnitInput" placeholder="Unit (optional)">
+                <button class="btn-primary" onclick="submitAddReading()">Save</button>
+            </div>
+            <table class="data-table">
+                <thead><tr><th>ID</th><th>Tank</th><th>Device</th><th>Parameter</th><th>Value</th><th>Unit</th><th>Time</th><th></th></tr></thead>
+                <tbody id="sensorReadingsTableBody"></tbody>
+            </table>
+        </section>
+
+        <!-- FEED EVENTS -->
+        <section id="feed-events" class="dashboard-section">
+            <div class="section-header">
+                <h1>Feed Events</h1>
+                <button class="btn-primary" onclick="openAddFeedForm()">+ Log Feed Event</button>
+            </div>
+            <div id="addFeedForm" class="inline-form hidden">
+                <input type="number" id="feedTankIdInput" placeholder="Tank ID">
+                <input type="number" id="feedUserIdInput" placeholder="User ID">
+                <select id="feedModeInput">
+                    <option value="manual">Manual</option>
+                    <option value="auto">Auto</option>
+                </select>
+                <input type="number" id="feedPortionInput" placeholder="Portion (seconds)">
+                <button class="btn-primary" onclick="submitAddFeed()">Save</button>
+            </div>
+            <table class="data-table">
+                <thead><tr><th>ID</th><th>Tank</th><th>User</th><th>Mode</th><th>Portion (s)</th><th>Status</th><th>Time</th><th></th></tr></thead>
+                <tbody id="feedEventsTableBody"></tbody>
+            </table>
+        </section>
+
+        <!-- USERS -->
+        <section id="users" class="dashboard-section">
+            <div class="section-header">
+                <h1>Users</h1>
+                <button class="btn-primary" onclick="openAddUserForm()">+ Add User</button>
+            </div>
+            <div id="addUserForm" class="inline-form hidden">
+                <input type="text" id="userUsernameInput" placeholder="Username">
+                <input type="email" id="userEmailInput" placeholder="Email">
+                <input type="password" id="userPasswordInput" placeholder="Password">
+                <select id="userRoleInput">
+                    <option value="user">User</option>
+                    <option value="admin">Admin</option>
+                </select>
+                <button class="btn-primary" onclick="submitAddUser()">Save</button>
+            </div>
+            <table class="data-table">
+                <thead><tr><th>ID</th><th>Username</th><th>Email</th><th>Role</th><th></th></tr></thead>
+                <tbody id="usersTableBody"></tbody>
+            </table>
+        </section>
+
+    </main>
+
+    <!-- JS -->
+    <script src="js/api.js"></script>
+    <script src="js/overview.js"></script>
+    <script src="js/tanks.js"></script>
+    <script src="js/devices.js"></script>
+    <script src="js/sensorReadings.js"></script>
+    <script src="js/feedEvents.js"></script>
+    <script src="js/users.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
